@@ -1,6 +1,5 @@
 cimport cython
 
-import uuid
 from cpython.bytes cimport PyBytes_AsString
 from cpython.unicode cimport PyUnicode_AsUTF8
 
@@ -44,6 +43,9 @@ cdef class UUIDLoader(CLoader):
             j += 1
         hex_str[32] = 0
 
+        # uuid is slow to import, lazy load it
+        import uuid
+
         u = uuid.UUID.__new__(uuid.UUID)
         object.__setattr__(u, 'is_safe', uuid.SafeUUID.unknown)
         object.__setattr__(u, 'int', PyLong_FromString(hex_str, NULL, 16))
@@ -55,6 +57,9 @@ cdef class UUIDBinaryLoader(CLoader):
     format = PQ_BINARY
 
     cdef object cload(self, const char *data, size_t length):
+        # uuid is slow to import, lazy load it
+        import uuid
+
         u = uuid.UUID.__new__(uuid.UUID)
         object.__setattr__(u, 'is_safe', uuid.SafeUUID.unknown)
         object.__setattr__(u, 'int', int.from_bytes(data[:length], 'big'))
