@@ -1,7 +1,11 @@
 cimport cython
 
 from cpython.bytes cimport PyBytes_AsString
-from cpython.unicode cimport PyUnicode_AsUTF8
+
+cdef extern from "Python.h":
+    # PyUnicode_AsUTF8 was added to cpython.unicode in 3.1.x but we still
+    # support 3.0.x
+    const char *PyUnicode_AsUTF8(object unicode) except NULL
 
 
 @cython.final
