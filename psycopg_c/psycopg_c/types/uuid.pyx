@@ -1,7 +1,11 @@
 cimport cython
 
+from types import ModuleType
 from cpython.bytes cimport PyBytes_AsString
 from cpython.unicode cimport PyUnicode_AsUTF8
+
+
+uuid: ModuleType | None = None
 
 
 @cython.final
@@ -32,6 +36,12 @@ cdef class UUIDBinaryDumper(CDumper):
 cdef class UUIDLoader(CLoader):
     format = PQ_TEXT
 
+    def __cinit__(self, oid: int, context: AdaptContext | None = None):
+        global uuid
+        # uuid is slow to import, lazy load it
+        if uuid is None:
+            import uuid
+
     cdef object cload(self, const char *data, size_t length):
         cdef char[33] hex_str
         cdef int i
@@ -43,9 +53,6 @@ cdef class UUIDLoader(CLoader):
             j += 1
         hex_str[32] = 0
 
-        # uuid is slow to import, lazy load it
-        import uuid
-
         u = uuid.UUID.__new__(uuid.UUID)
         object.__setattr__(u, 'is_safe', uuid.SafeUUID.unknown)
         object.__setattr__(u, 'int', PyLong_FromString(hex_str, NULL, 16))
@@ -56,10 +63,13 @@ cdef class UUIDLoader(CLoader):
 cdef class UUIDBinaryLoader(CLoader):
     format = PQ_BINARY
 
-    cdef object cload(self, const char *data, size_t length):
+    def __cinit__(self, oid: int, context: AdaptContext | None = None):
+        global uuid
         # uuid is slow to import, lazy load it
-        import uuid
+        if uuid is None:
+            import uuid
 
+    cdef object cload(self, const char *data, size_t length):
         u = uuid.UUID.__new__(uuid.UUID)
         object.__setattr__(u, 'is_safe', uuid.SafeUUID.unknown)
         object.__setattr__(u, 'int', int.from_bytes(data[:length], 'big'))
