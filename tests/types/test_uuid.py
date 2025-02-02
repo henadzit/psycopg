@@ -20,7 +20,14 @@ def test_uuid_dump(conn, fmt_in):
 @pytest.mark.crdb_skip("copy")
 @pytest.mark.parametrize("fmt_out", pq.Format)
 @pytest.mark.parametrize(
-    "val", ["12345678123456781234567812345679", "12345678-1234-5678-1234-567812345679"]
+    "val",
+    [
+        "12345678123456781234567812345679",
+        "12345678-1234-5678-1234-567812345679",
+        "0123456789abcdef0123456789abcdef",
+        "01234567-89ab-cdef-0123-456789abcdef",
+        "{a0eebc99-9c0b4ef8-bb6d6bb9-bd380a11}",
+    ],
 )
 def test_uuid_load(conn, fmt_out, val):
     cur = conn.cursor(binary=fmt_out)
