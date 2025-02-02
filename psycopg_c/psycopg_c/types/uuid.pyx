@@ -104,7 +104,20 @@ cdef class UUIDBinaryLoader(CLoader):
             import uuid
 
     cdef object cload(self, const char *data, size_t length):
+        cdef unsigned long long high = 0
+        cdef unsigned long long low = 0
+        cdef int i
+
+        # Construct the 128-bit integer from the bytes in big-endian order
+        for i in range(8):
+            high = (high << 8) | <unsigned char>data[i]
+        for i in range(8, 16):
+            low = (low << 8) | <unsigned char>data[i]
+
+        cdef object py_high = PyLong_FromUnsignedLongLong(high)
+        cdef object py_low = PyLong_FromUnsignedLongLong(low)
+
         u = uuid.UUID.__new__(uuid.UUID)
         object.__setattr__(u, 'is_safe', uuid.SafeUUID.unknown)
-        object.__setattr__(u, 'int', int.from_bytes(data[:length], 'big'))
+        object.__setattr__(u, 'int', (py_high << 64) | py_low)
         return u
