@@ -48,6 +48,12 @@ def test_uuid_load(conn, fmt_out, val):
     assert res.int == uuid_val.int
     assert res.bytes == uuid_val.bytes
     assert res.is_safe == uuid_val.is_safe
+    assert getattr(UUID, "__slots__") == (
+        "int",
+        "is_safe",
+        "__weakref__",
+    ), "UUID structure changed"
+    assert getattr(uuid_val, "__slots__") == getattr(UUID, "__slots__")
 
 
 @pytest.mark.slow
