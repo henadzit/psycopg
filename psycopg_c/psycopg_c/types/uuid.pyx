@@ -84,7 +84,7 @@ cdef class UUIDLoader(CLoader):
     cdef object cload(self, const char *data, size_t length):
         cdef uint64_t high = 0
         cdef uint64_t low = 0
-        cdef int i
+        cdef size_t i
         cdef int ndigits = 0
         cdef int8_t c
 
