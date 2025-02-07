@@ -305,7 +305,6 @@ def test_subclass_adapter(conn, format):
         BaseDumper = StrBinaryDumper  # type: ignore
 
     class MyStrDumper(BaseDumper):
-
         def dump(self, obj):
             rv = super().dump(obj)
             assert rv
@@ -329,7 +328,6 @@ def test_subclass_nulling_dumper(conn, format):
     Base: type = StrNoneDumper if format == pq.Format.TEXT else StrNoneBinaryDumper
 
     class MyStrDumper(Base):  # type: ignore
-
         def dump(self, obj):
             return super().dump(obj) if obj else None
 
@@ -668,7 +666,6 @@ def test_worker_life(conn, format, buffer):
 
 
 def test_worker_error_propagated(conn, monkeypatch):
-
     def copy_to_broken(pgconn, buffer, flush=True):
         raise ZeroDivisionError
         yield
@@ -793,7 +790,13 @@ def test_copy_from_leaks(conn_cls, dsn, faker, fmt, set_types, gc):
     gc.collect()
     n = []
     for i in range(3):
-        work()
+        try:
+            work()
+        except Exception:
+            print(faker.schema)
+            print(faker.records)
+            raise
+
         gc.collect()
         n.append(gc.count())
 
@@ -834,7 +837,6 @@ def test_copy_table_across(conn_cls, dsn, faker, mode):
 
 
 class DataGenerator:
-
     def __init__(self, conn, nrecs, srec, offset=0, block_size=8192):
         self.conn = conn
         self.nrecs = nrecs
