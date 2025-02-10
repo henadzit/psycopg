@@ -9,6 +9,19 @@ cdef extern from "Python.h":
     # support 3.0.x
     const char *PyUnicode_AsUTF8(object unicode) except NULL
 
+cdef extern from * nogil:
+    """
+#if BYTE_ORDER == LITTLE_ENDIAN
+#    define UINT128_HOST_HIGH_IDX 1
+#    define UINT128_HOST_LOW_IDX 0
+#else
+#    define UINT128_HOST_HIGH_IDX 0
+#    define UINT128_HOST_LOW_IDX 1
+#endif
+    """
+    cdef size_t UINT128_HOST_HIGH_IDX
+    cdef size_t UINT128_HOST_LOW_IDX
+
 
 @cython.final
 cdef class UUIDDumper(CDumper):
@@ -91,9 +104,8 @@ cdef class UUIDLoader(_UUIDLoader):
     format = PQ_TEXT
 
     cdef object cload(self, const char *data, size_t length):
-        cdef uint64_t high = 0
-        cdef uint64_t low = 0
-        cdef int i
+        cdef uint64_t be[2]
+        cdef size_t i
         cdef int ndigits = 0
         cdef int8_t c
 
@@ -103,15 +115,15 @@ cdef class UUIDLoader(_UUIDLoader):
                 continue
 
             if ndigits < 16:
-                high = (high << 4) | hex_to_int_map[c]
+                be[0] = (be[0] << 4) | hex_to_int_map[c]
             else:
-                low = (low << 4) | hex_to_int_map[c]
+                be[1] = (be[1] << 4) | hex_to_int_map[c]
             ndigits += 1
 
         if ndigits != 32:
             raise ValueError("Invalid UUID string")
 
-        return self._return_uuid(low, high)
+        return self._return_uuid(be[UINT128_HOST_LOW_IDX], be[UINT128_HOST_HIGH_IDX])
 
 
 @cython.final
@@ -120,10 +132,12 @@ cdef class UUIDBinaryLoader(_UUIDLoader):
 
     cdef object cload(self, const char *data, size_t length):
         cdef uint64_t be[2]
+
         if length != sizeof(be):
             raise ValueError("Invalid UUID data")
         memcpy(&be, data, sizeof(be))
 
-        cdef uint64_t high = endian.be64toh(be[0])
-        cdef uint64_t low = endian.be64toh(be[1])
-        return self._return_uuid(low, high)
+        be[0] = endian.be64toh(be[0])
+        be[1] = endian.be64toh(be[1])
+
+        return self._return_uuid(be[UINT128_HOST_LOW_IDX], be[UINT128_HOST_HIGH_IDX])
