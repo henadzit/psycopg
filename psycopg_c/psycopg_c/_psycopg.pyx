@@ -46,6 +46,7 @@ include "_psycopg/copy.pyx"
 include "_psycopg/generators.pyx"
 include "_psycopg/transform.pyx"
 include "_psycopg/waiting.pyx"
+include "_psycopg/queries.pyx"
 
 include "types/array.pyx"
 include "types/datetime.pyx"

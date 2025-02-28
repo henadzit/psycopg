@@ -56,9 +56,7 @@ class WaitFunc(Protocol):
     Wait on the connection which generated `PQgen` and return its final result.
     """
 
-    def __call__(
-        self, gen: PQGen[RV], fileno: int, interval: float | None = None
-    ) -> RV: ...
+    def __call__(self, gen: PQGen[RV], fileno: int, interval: float | None = None) -> RV: ...
 
 
 # Adaptation types
@@ -248,3 +246,8 @@ class Transformer(Protocol):
     def load_sequence(self, record: Sequence[Buffer | None]) -> tuple[Any, ...]: ...
 
     def get_loader(self, oid: int, format: pq.Format) -> Loader: ...
+
+
+class PostgresQuery(Protocol):
+    def convert(self, query: Query, vars: Params | None) -> None: ...
+    def dump(self, vars: Params | None) -> None: ...

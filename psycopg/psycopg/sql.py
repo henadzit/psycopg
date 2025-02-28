@@ -17,7 +17,6 @@ from .abc import AdaptContext
 from ._enums import PyFormat
 from ._compat import LiteralString
 from ._encodings import conn_encoding
-from ._transformer import Transformer
 
 
 def quote(obj: Any, context: AdaptContext | None = None) -> str:
@@ -412,6 +411,9 @@ class Literal(Composable):
     """
 
     def as_bytes(self, context: AdaptContext | None = None) -> bytes:
+        # TODO:
+        from ._transformer import Transformer
+
         tx = Transformer.from_context(context)
         return tx.as_literal(self._obj)
 
