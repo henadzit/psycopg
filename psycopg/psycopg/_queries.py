@@ -275,7 +275,7 @@ class PostgresClientQuery(PostgresQuery):
         This method updates `params` and `types`.
         """
         if vars is not None:
-            params = self.validate_and_reorder_params(self._parts, vars, self._order)
+            # params = self.validate_and_reorder_params(self._parts, vars, self._order)
             self.params = tuple(
                 self._tx.as_literal(p) if p is not None else b"NULL" for p in params
             )
